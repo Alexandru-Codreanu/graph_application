@@ -82,10 +82,13 @@ class _FileInputOptionState extends State<FileInputOption> {
                     : () async {
                         widget.controller.isLoading = true;
                         if (widget.controller.file!.name.split('.').last == 'json') {
-                          widget.controller.graph = await compute(
-                            IsolateOperations.graphFromJson,
-                            await compute(IsolateOperations.decodeJson, widget.controller.file!),
+                          widget.controller.graph.copyGraph(
+                            await compute(
+                              IsolateOperations.graphFromJson,
+                              await compute(IsolateOperations.decodeJson, widget.controller.file!),
+                            ),
                           );
+
                           widget.controller.isLoading = false;
                           return;
                         }

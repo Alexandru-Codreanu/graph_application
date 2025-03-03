@@ -57,6 +57,30 @@ class Graph extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addNodeList(List<Node> newNodes) {
+    nodes.addAll(newNodes);
+    notifyListeners();
+  }
+
+  void addArcsList(List<Arc> newArcs) {
+    arcs.addAll(newArcs);
+    notifyListeners();
+  }
+
+  void clearAll() {
+    nodes.clear();
+    arcs.clear();
+    notifyListeners();
+  }
+
+  void copyGraph(Graph source) {
+    arcs.clear();
+    nodes.clear();
+    arcs.addAll(source.arcs);
+    nodes.addAll(source.nodes);
+    notifyListeners();
+  }
+
   Graph.fromJson({required dynamic json})
       : arcs = (json['arcs'] as List).map((element) => Arc.fromJson(json: element)).toList(),
         nodes = (json['nodes'] as List).map((element) => Node.fromJson(json: element)).toList();
