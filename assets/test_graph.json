@@ -2,49 +2,89 @@
   "nodes": [
     {
       "id": 0,
-      "x": 100.0,
-      "y": 100.0
+      "x": 75.0,
+      "y": 275.0
     },
     {
       "id": 1,
-      "x": 200.0,
-      "y": 150.0
+      "x": 325.0,
+      "y": 100.0
     },
     {
       "id": 2,
-      "x": 300.0,
-      "y": 50.0
+      "x": 325.0,
+      "y": 450.0
     },
     {
       "id": 3,
-      "x": 400.0,
-      "y": 200.0
+      "x": 625.0,
+      "y": 100.0
+    },
+    {
+      "id": 4,
+      "x": 625.0,
+      "y": 450.0
+    },
+    {
+      "id": 5,
+      "x": 925.0,
+      "y": 275.0
     }
   ],
   "arcs": [
     {
       "first": 0,
       "second": 1,
-      "capacity": 15.0,
-      "flow": 7.5
+      "capacity": 7.0,
+      "flow": 0.0
     },
     {
-      "first": 1,
+      "first": 0,
       "second": 2,
-      "capacity": 20.0,
-      "flow": 10.0
+      "capacity": 4.0,
+      "flow": 0.0
     },
     {
       "first": 2,
+      "second": 1,
+      "capacity": 3.0,
+      "flow": 0.0
+    },
+    {
+      "first": 1,
       "second": 3,
-      "capacity": 25.0,
-      "flow": 12.5
+      "capacity": 5.0,
+      "flow": 0.0
     },
     {
       "first": 3,
-      "second": 0,
-      "capacity": 30.0,
-      "flow": 15.0
+      "second": 5,
+      "capacity": 8.0,
+      "flow": 0.0
+    },
+    {
+      "first": 2,
+      "second": 4,
+      "capacity": 2.0,
+      "flow": 0.0
+    },
+    {
+      "first": 1,
+      "second": 4,
+      "capacity": 3.0,
+      "flow": 0.0
+    },
+    {
+      "first": 3,
+      "second": 4,
+      "capacity": 3.0,
+      "flow": 0.0
+    },
+    {
+      "first": 4,
+      "second": 5,
+      "capacity": 5.0,
+      "flow": 0.0
     }
   ]
 }

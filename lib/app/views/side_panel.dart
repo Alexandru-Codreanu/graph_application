@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../controllers/graph_controller.dart';
+import 'options/algorithms_option.dart';
 import 'options/file_input_option.dart';
 import 'options/first_node_selected_indicator.dart';
 import 'options/mode_selector_option.dart';
@@ -38,6 +39,7 @@ class _SidePanelState extends State<SidePanel> {
                     ModeSelectorOption(controller: widget.controller),
                     FirstNodeSelectedIndicator(controller: widget.controller),
                     FileInputOption(controller: widget.controller),
+                    AlgorithmsOption(controller: widget.controller),
                   ],
                 ),
               ),
