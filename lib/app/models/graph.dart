@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'adjacency.dart';
 import 'arc.dart';
@@ -27,6 +28,41 @@ class Graph extends ChangeNotifier {
       : arcs = List<Arc>.empty(growable: true),
         nodes = List<Node>.empty(growable: true),
         adjacencyMap = <int, List<Adjacency>>{};
+
+  List<int> randomTraversal(int start, int end) {
+    List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
+    List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
+    List<int> choices = List<int>.empty(growable: true);
+    Random random = Random(DateTime.now().millisecondsSinceEpoch);
+
+    visited[start] = true;
+    choices.add(start);
+    parent[start] = -1;
+
+    while (choices.isNotEmpty) {
+      int current = choices.removeAt(random.nextInt(choices.length));
+
+      if (current == end) {
+        List<int> path = [];
+        current = end;
+        while (current != -1) {
+          path.add(current);
+          current = parent[current];
+        }
+        return path.reversed.toList();
+      }
+
+      for (int i = 0; i < adjacencyMap[current]!.length; i++) {
+        if (!visited[adjacencyMap[current]![i].secondNodeIndex] && arcs[adjacencyMap[current]![i].arcIndex].residualCapacity > 0) {
+          visited[current] = true;
+          parent[adjacencyMap[current]![i].secondNodeIndex] = current;
+          choices.add(adjacencyMap[current]![i].secondNodeIndex);
+        }
+      }
+    }
+
+    return List.empty();
+  }
 
   List<int> depthFirstSearch(int start, int end) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);

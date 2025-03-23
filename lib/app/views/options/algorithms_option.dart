@@ -1,9 +1,10 @@
 import 'dart:developer';
-
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../controllers/algorithms.dart';
 import '../../controllers/graph_controller.dart';
+import '../../models/graph.dart';
 import 'options_holder.dart';
 import 'simple_option_button.dart';
 
@@ -37,22 +38,89 @@ class _AlgorithmsOptionState extends State<AlgorithmsOption> {
                       ? null
                       : () async {
                           widget.controller.isLoading = true;
+                          final ReceivePort receivePort = ReceivePort();
+                          receivePort.listen(
+                            (message) {
+                              if (message is! Graph) {
+                                log(message);
+                                return;
+                              }
+                              widget.controller.graph.copyGraph(message);
+                            },
+                          );
+                          Isolate.spawn(IsolateAlgorithms.generic, {
+                            "nodes": widget.controller.graph.nodes,
+                            "arcs": widget.controller.graph.arcs,
+                            "start": 0,
+                            "end": widget.controller.graph.nodes.last.id,
+                            "port": receivePort.sendPort,
+                          }).then(
+                            (value) {
+                              widget.controller.isLoading = false;
+                            },
+                          );
 
                           await compute(IsolateAlgorithms.generic, {
                             "nodes": widget.controller.graph.nodes,
                             "arcs": widget.controller.graph.arcs,
                             "start": 0,
                             "end": widget.controller.graph.nodes.last.id,
+                            "port": receivePort.sendPort,
                           }).then(
                             (value) {
-                              widget.controller.graph.copyGraph(value.$1);
-                              log(value.$2.toString());
+                              widget.controller.graph.copyGraph(value);
+                              widget.controller.isLoading = false;
                             },
                           );
 
-                          widget.controller.isLoading = false;
                           return;
                         }),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
+                label: "Ford Fulkerson",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+
+                        await compute(IsolateAlgorithms.fordFulkerson, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": 0,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
+                label: "Edmonds Karp",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+
+                        await compute(IsolateAlgorithms.edmondsKarp, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": 0,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
             ],
           ),
         ),
