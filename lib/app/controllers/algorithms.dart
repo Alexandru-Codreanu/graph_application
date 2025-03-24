@@ -40,7 +40,7 @@ abstract final class IsolateAlgorithms {
 
     graph.setFlowToZero();
     do {
-      augmentingPath = graph.depthFirstSearch(start, end);
+      augmentingPath = graph.breadthFirstSearchFF(start, end);
       residual = graph.minResidualValue(augmentingPath.toList());
       graph.increaseWithResidual(residual, augmentingPath.toList());
     } while (augmentingPath.isNotEmpty);
@@ -58,10 +58,20 @@ abstract final class IsolateAlgorithms {
 
     graph.setFlowToZero();
     do {
-      augmentingPath = graph.breadthFirstSearch(start, end);
+      augmentingPath = graph.breadthFirstSearchFF(start, end);
       residual = graph.minResidualValue(augmentingPath.toList());
       graph.increaseWithResidual(residual, augmentingPath.toList());
     } while (augmentingPath.isNotEmpty);
+
+    return graph;
+  }
+
+  static Graph maximumScale(Map<String, Object> map) {
+    final List<Node> nodes = map['nodes'] as List<Node>;
+    final List<Arc> arcs = map['arcs'] as List<Arc>;
+    final Graph graph = Graph(nodes: nodes, arcs: arcs);
+
+    //....
 
     return graph;
   }
