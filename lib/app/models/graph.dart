@@ -133,6 +133,40 @@ class Graph extends ChangeNotifier {
     return List.empty();
   }
 
+  List<int> breadthFirstSearchMS(int start, int end, double residual) {
+    List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
+    List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
+    Queue<int> queue = Queue<int>();
+
+    visited[start] = true;
+    queue.add(start);
+    parent[start] = -1;
+
+    while (queue.isNotEmpty) {
+      int current = queue.removeLast();
+
+      if (current == end) {
+        List<int> path = [];
+        current = end;
+        while (current != -1) {
+          path.add(current);
+          current = parent[current];
+        }
+        return path.reversed.toList();
+      }
+
+      for (int i = 0; i < adjacencyMap[current]!.length; i++) {
+        if (!visited[adjacencyMap[current]![i].secondNodeIndex] && arcs[adjacencyMap[current]![i].arcIndex].residualCapacity >= residual) {
+          visited[current] = true;
+          parent[adjacencyMap[current]![i].secondNodeIndex] = current;
+          queue.add(adjacencyMap[current]![i].secondNodeIndex);
+        }
+      }
+    }
+
+    return List.empty();
+  }
+
   List<int> breadthFirstSearch(int start, int end) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
     List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);

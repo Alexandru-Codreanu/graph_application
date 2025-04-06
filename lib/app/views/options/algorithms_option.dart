@@ -121,6 +121,52 @@ class _AlgorithmsOptionState extends State<AlgorithmsOption> {
                         return;
                       },
               ),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
+                label: "Maximum Scale",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+
+                        await compute(IsolateAlgorithms.maximumScale, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": 0,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
+                label: "Bit Scale",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+
+                        await compute(IsolateAlgorithms.bitScale, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": 0,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
             ],
           ),
         ),
