@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 import '../models/arc.dart';
 import '../models/graph.dart';
@@ -75,20 +74,18 @@ abstract final class IsolateAlgorithms {
     final int end = input.$3;
     List<int> augmentingPath = List.empty(growable: true);
     double pathResidual = double.maxFinite;
-    double maxCapacity = double.minPositive;
 
     graph.setFlowToZero();
-    for (var i = 0; i < graph.arcs.length; i++) {
-      if (graph.arcs[i].capacity >= maxCapacity) {
-        maxCapacity = graph.arcs[i].capacity;
-      }
-    }
-    double residual = pow(2, log(maxCapacity) ~/ log(2)).toDouble();
+
+    double maxCapacity = graph.arcs.map((e) => e.capacity).reduce(max);
+
+    double residual = pow(2, log(maxCapacity).floor()).toDouble();
+
     while (residual >= 1) {
-      print(residual);
+      print('r: $residual');
       do {
         augmentingPath = graph.breadthFirstSearchMS(start, end, residual);
-        print(augmentingPath.toString());
+        print('path: ${augmentingPath.toString()}');
         pathResidual = graph.minResidualValue(augmentingPath.toList());
         graph.increaseWithResidual(pathResidual, augmentingPath.toList());
       } while (augmentingPath.isNotEmpty);
@@ -103,93 +100,45 @@ abstract final class IsolateAlgorithms {
     final Graph graph = input.$1;
     final int start = input.$2;
     final int end = input.$3;
+    List<Graph> graphOfEachK = List<Graph>.empty(growable: true);
+    int k = 0;
 
-    graph.setFlowToZero();
+    graphOfEachK.add(graph);
 
-    double maxCapacity = graph.arcs.map((arc) => arc.capacity).reduce(max);
+    while (graphOfEachK[k].arcs.map((arc) => arc.capacity).reduce(max) > 1) {
+      graphOfEachK.add(Graph.empty()..copyGraph(graphOfEachK.last));
 
-    if (maxCapacity <= 0) {
-      return graph;
-    }
-
-    int kMax = (log(maxCapacity) / log(2)).floor();
-
-    for (int k = kMax; k >= 0; k--) {
-      double delta = (1 << k).toDouble();
-
-      while (true) {
-        Queue<int> queue = Queue();
-        Map<int, (int prevNode, int arcIndex, bool isReverse)> parent = {};
-        queue.add(start);
-        parent[start] = (-1, -1, false);
-
-        bool foundPath = false;
-
-        while (queue.isNotEmpty) {
-          int u = queue.removeFirst();
-          if (u == end) {
-            foundPath = true;
-            break;
-          }
-
-          for (var adj in graph.adjacencyMap[u]!) {
-            Arc arc = graph.arcs[adj.arcIndex];
-            double residual = arc.capacity - arc.flow;
-            if (residual >= delta) {
-              int v = adj.secondNodeIndex;
-              if (!parent.containsKey(v)) {
-                parent[v] = (u, adj.arcIndex, false);
-                queue.add(v);
-              }
-            }
-          }
-
-          for (int arcIndex = 0; arcIndex < graph.arcs.length; arcIndex++) {
-            Arc arc = graph.arcs[arcIndex];
-            if (arc.secondNode == u) {
-              double residual = arc.flow;
-              if (residual >= delta) {
-                int v = arc.firstNode;
-                if (!parent.containsKey(v)) {
-                  parent[v] = (u, arcIndex, true);
-                  queue.add(v);
-                }
-              }
-            }
-          }
-        }
-
-        if (!foundPath) {
-          break;
-        }
-
-        List<(int arcIndex, bool isReverse)> pathEdges = [];
-        double minResidual = double.infinity;
-        int current = end;
-
-        while (current != start) {
-          var (prev, arcIndex, isReverse) = parent[current]!;
-          pathEdges.add((arcIndex, isReverse));
-          current = prev;
-        }
-        pathEdges = pathEdges.reversed.toList();
-
-        for (var (arcIndex, isReverse) in pathEdges) {
-          Arc arc = graph.arcs[arcIndex];
-          double residual = isReverse ? arc.flow : (arc.capacity - arc.flow);
-          if (residual < minResidual) minResidual = residual;
-        }
-
-        for (var (arcIndex, isReverse) in pathEdges) {
-          Arc arc = graph.arcs[arcIndex];
-          if (isReverse) {
-            arc.flow -= minResidual;
-          } else {
-            arc.flow += minResidual;
-          }
-        }
+      for (var i = 0; i < graphOfEachK[k].arcs.length; i++) {
+        graphOfEachK[k + 1].arcs[i].capacity = (graphOfEachK[k].arcs[i].capacity / 2).floorToDouble();
       }
+
+      k += 1;
     }
+
+    while (k >= 0) {
+      for (var i = 0; i < graphOfEachK[0].arcs.length; i++) {
+        if (k + 1 > graphOfEachK.length - 1) {
+          graphOfEachK[k].arcs[i].flow = 0.0;
+          continue;
+        }
+
+        graphOfEachK[k].arcs[i].flow = graphOfEachK[k + 1].arcs[i].flow * 2;
+      }
+
+      var auxPath = graphOfEachK[k].breadthFirstSearch(start, end);
+      var auxResidual = graphOfEachK[k].minResidualValue(auxPath.toList());
+      graphOfEachK[k].increaseWithResidual(auxResidual, auxPath);
+      k -= 1;
+    }
+
+    return graphOfEachK.first;
+  }
+
+  static Graph shortPathAhujaOrlin(Map<String, Object> map) {
+    final (Graph, int, int) input = handleInput(map);
+    final Graph graph = input.$1;
+    // final int start = input.$2;
+    // final int end = input.$3;
 
     return graph;
   }

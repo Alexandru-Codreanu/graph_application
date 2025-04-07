@@ -6,8 +6,8 @@ import 'arc.dart';
 import 'node.dart';
 
 class Graph extends ChangeNotifier {
-  final List<Node> nodes;
-  final List<Arc> arcs;
+  List<Node> nodes;
+  List<Arc> arcs;
   late Map<int, List<Adjacency>> adjacencyMap;
 
   Graph({
@@ -354,8 +354,22 @@ class Graph extends ChangeNotifier {
     arcs.clear();
     nodes.clear();
     adjacencyMap.clear();
-    arcs.addAll(source.arcs);
-    nodes.addAll(source.nodes);
+    for (int i = 0; i < source.arcs.length; i++) {
+      arcs.add(Arc(
+        firstNode: source.arcs[i].firstNode,
+        secondNode: source.arcs[i].secondNode,
+        capacity: source.arcs[i].capacity,
+        flow: source.arcs[i].flow,
+      ));
+    }
+
+    for (var i = 0; i < source.nodes.length; i++) {
+      nodes.add(Node(
+        id: source.nodes[i].id,
+        position: source.nodes[i].position,
+      ));
+    }
+
     _initAdjacencyMap();
     notifyListeners();
   }
