@@ -251,6 +251,36 @@ class Graph extends ChangeNotifier {
     return false;
   }
 
+  List<int> getDistances(int start, int end) {
+    List<int> distances = List<int>.filled(nodes.length, -1);
+
+    distances[end] = 0;
+    Queue<int> current = Queue<int>()..add(end);
+    do {
+      List<int> predecessors = List.empty(growable: true);
+      for (var mapValue in adjacencyMap.entries) {
+        var key = mapValue.key;
+        var values = mapValue.value
+            .where((element) => element.secondNodeIndex == current.first)
+            .where((element) => arcs[element.arcIndex].residualCapacity > 0.0)
+            .where((element) => distances[arcs[element.arcIndex].firstNode] == -1)
+            .toList();
+
+        if (values.isEmpty) {
+          continue;
+        }
+        predecessors.add(key);
+      }
+      for (var predecessor in predecessors) {
+        distances[predecessor] = distances[current.first] + 1;
+        current.add(predecessor);
+      }
+      predecessors.clear();
+      current.removeFirst();
+    } while (current.isNotEmpty);
+    return distances;
+  }
+
   void _initAdjacencyMap() {
     adjacencyMap = <int, List<Adjacency>>{};
     for (int i = 0; i < nodes.length; i++) {

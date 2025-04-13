@@ -137,9 +137,60 @@ abstract final class IsolateAlgorithms {
   static Graph shortPathAhujaOrlin(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
-    // final int start = input.$2;
-    // final int end = input.$3;
+    final int start = input.$2;
+    final int end = input.$3;
+    List<int> distances = graph.getDistances(start, end);
+    List<int> predecessors = List<int>.filled(graph.nodes.length, -1);
+    List<bool> blocked = List<bool>.filled(graph.nodes.length, false);
+    List<Arc> arcs = List.empty(growable: true);
+    int x = start;
 
+    graph.setFlowToZero();
+    print("Distance: $distances");
+
+    while (distances[start] < graph.nodes.length) {
+      if (blocked[start]) {
+        break;
+      }
+
+      var successors = graph.adjacencyMap[x]
+              ?.where((element) =>
+                  distances[x] == distances[element.secondNodeIndex] + 1 &&
+                  !blocked[element.secondNodeIndex] &&
+                  graph.arcs[element.arcIndex].residualCapacity > 0.0)
+              .toList() ??
+          [];
+
+      if (successors.isEmpty) {
+        if (arcs.isNotEmpty) {
+          arcs.removeLast();
+        }
+        blocked[x] = true;
+        if (x != start) {
+          x = predecessors[x];
+        }
+        continue;
+      }
+
+      predecessors[successors.first.secondNodeIndex] = x;
+      x = successors.first.secondNodeIndex;
+      arcs.add(graph.arcs[successors.first.arcIndex]);
+
+      if (x == end) {
+        List<int> auxList = List.empty(growable: true);
+        for (var i = 0; i < arcs.length; i++) {
+          auxList.add(arcs[i].firstNode);
+        }
+        auxList.add(arcs.last.secondNode);
+        var auxResidual = graph.minResidualValue(auxList.toList());
+        graph.increaseWithResidual(auxResidual, auxList.toList());
+        predecessors.fillRange(0, predecessors.length, -1);
+        arcs.clear();
+        x = start;
+        distances = graph.getDistances(start, end);
+        print("Distance: $distances");
+      }
+    }
     return graph;
   }
 }
