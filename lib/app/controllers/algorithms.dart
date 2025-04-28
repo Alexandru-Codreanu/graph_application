@@ -67,6 +67,7 @@ abstract final class IsolateAlgorithms {
     return graph;
   }
 
+  /// Fix
   static Graph maximumScale(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
@@ -95,6 +96,7 @@ abstract final class IsolateAlgorithms {
     return graph;
   }
 
+  /// Fix
   static Graph bitScale(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
@@ -126,14 +128,19 @@ abstract final class IsolateAlgorithms {
       }
 
       var auxPath = graphOfEachK[k].breadthFirstSearch(start, end);
-      var auxResidual = graphOfEachK[k].minResidualValue(auxPath.toList());
-      graphOfEachK[k].increaseWithResidual(auxResidual, auxPath);
+      while (auxPath.isNotEmpty) {
+        var auxResidual = graphOfEachK[k].minResidualValue(auxPath.toList());
+        graphOfEachK[k].increaseWithResidual(auxResidual, auxPath);
+        auxPath = graphOfEachK[k].breadthFirstSearch(start, end);
+      }
+
       k -= 1;
     }
 
     return graphOfEachK.first;
   }
 
+  ///Also make this without blocked
   static Graph shortPathAhujaOrlin(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
@@ -191,6 +198,31 @@ abstract final class IsolateAlgorithms {
         print("Distance: $distances");
       }
     }
+    return graph;
+  }
+
+  static Graph genericPreflux(Map<String, Object> map) {
+    final (Graph, int, int) input = handleInput(map);
+    final Graph graph = input.$1;
+    final int start = input.$2;
+    final int end = input.$3;
+    List<int> distances = [];
+
+    //Initializare
+    graph.setFlowToZero();
+    distances = graph.getDistances(start, end);
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      distances[graph.adjacencyMap[start]![i].secondNodeIndex] += graph.arcs[graph.adjacencyMap[start]![i].arcIndex].residualCapacity.toInt();
+    }
+    distances[start] = graph.nodes.length;
+
+    //While exista nod activ
+    //selecteaza un nod activ x
+    //inaintare/reetichetare x
+    // if reteaua reziduala contine arc admisibil (x,y)
+    // se intainteaza u = min (e(x), r(x,y))
+    // else d(x) = min(d(y) + 1| (x,y) apartine arcuri ale lui x care au r > 0)
+
     return graph;
   }
 }

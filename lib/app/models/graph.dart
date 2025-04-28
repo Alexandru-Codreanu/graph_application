@@ -133,6 +133,8 @@ class Graph extends ChangeNotifier {
     return List.empty();
   }
 
+  /// Remake of this
+  /// Something about reteaua reziduala
   List<int> breadthFirstSearchMS(int start, int end, double residual) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
     List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
@@ -167,6 +169,8 @@ class Graph extends ChangeNotifier {
     return List.empty();
   }
 
+  /// Remake of this
+  /// Something about reteaua reziduala
   List<int> breadthFirstSearch(int start, int end) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
     List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
@@ -177,7 +181,7 @@ class Graph extends ChangeNotifier {
     parent[start] = -1;
 
     while (queue.isNotEmpty) {
-      int current = queue.removeLast();
+      int current = queue.removeFirst();
 
       if (current == end) {
         List<int> path = [];
