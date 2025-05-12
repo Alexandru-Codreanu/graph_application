@@ -29,6 +29,17 @@ class Graph extends ChangeNotifier {
         nodes = List<Node>.empty(growable: true),
         adjacencyMap = <int, List<Adjacency>>{};
 
+  Graph residualGraph() {
+    Graph residualGraph = Graph.empty();
+    residualGraph.addNodeList(nodes.toList());
+    for (var i = 0; i < arcs.length; i++) {
+      if (arcs[i].flow == 0) {
+        
+      }
+    }
+    return residualGraph;
+  }
+
   List<int> randomTraversal(int start, int end) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
     List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
@@ -44,7 +55,6 @@ class Graph extends ChangeNotifier {
 
       if (current == end) {
         List<int> path = [];
-        current = end;
         while (current != -1) {
           path.add(current);
           current = parent[current];
@@ -57,40 +67,6 @@ class Graph extends ChangeNotifier {
           visited[current] = true;
           parent[adjacencyMap[current]![i].secondNodeIndex] = current;
           choices.add(adjacencyMap[current]![i].secondNodeIndex);
-        }
-      }
-    }
-
-    return List.empty();
-  }
-
-  List<int> depthFirstSearch(int start, int end) {
-    List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
-    List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
-    Queue<int> queue = Queue<int>();
-
-    visited[start] = true;
-    queue.add(start);
-    parent[start] = -1;
-
-    while (queue.isNotEmpty) {
-      int current = queue.removeFirst();
-
-      if (current == end) {
-        List<int> path = [];
-        current = end;
-        while (current != -1) {
-          path.add(current);
-          current = parent[current];
-        }
-        return path.reversed.toList();
-      }
-
-      for (int i = 0; i < adjacencyMap[current]!.length; i++) {
-        if (!visited[adjacencyMap[current]![i].secondNodeIndex] && arcs[adjacencyMap[current]![i].arcIndex].residualCapacity > 0) {
-          visited[current] = true;
-          parent[adjacencyMap[current]![i].secondNodeIndex] = current;
-          queue.add(adjacencyMap[current]![i].secondNodeIndex);
         }
       }
     }
@@ -113,7 +89,6 @@ class Graph extends ChangeNotifier {
 
       if (current == end) {
         List<int> path = [];
-        current = end;
         while (current != -1) {
           path.add(current);
           current = parent[current];
@@ -122,10 +97,13 @@ class Graph extends ChangeNotifier {
       }
 
       for (int i = 0; i < adjacencyMap[current]!.length; i++) {
-        if (!visited[adjacencyMap[current]![i].secondNodeIndex] && arcs[adjacencyMap[current]![i].arcIndex].residualCapacity > 0) {
-          visited[current] = true;
-          parent[adjacencyMap[current]![i].secondNodeIndex] = current;
-          choices.add(adjacencyMap[current]![i].secondNodeIndex);
+        final int neighbour = adjacencyMap[current]![i].secondNodeIndex;
+        final int neighbourArchIndex = adjacencyMap[current]![i].arcIndex;
+
+        if (!visited[neighbour] && arcs[neighbourArchIndex].residualCapacity > 0) {
+          visited[neighbour] = true;
+          parent[neighbour] = current;
+          choices.add(neighbour);
         }
       }
     }
@@ -133,8 +111,6 @@ class Graph extends ChangeNotifier {
     return List.empty();
   }
 
-  /// Remake of this
-  /// Something about reteaua reziduala
   List<int> breadthFirstSearchMS(int start, int end, double residual) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
     List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
@@ -145,11 +121,10 @@ class Graph extends ChangeNotifier {
     parent[start] = -1;
 
     while (queue.isNotEmpty) {
-      int current = queue.removeLast();
+      int current = queue.removeFirst();
 
       if (current == end) {
         List<int> path = [];
-        current = end;
         while (current != -1) {
           path.add(current);
           current = parent[current];
@@ -158,10 +133,13 @@ class Graph extends ChangeNotifier {
       }
 
       for (int i = 0; i < adjacencyMap[current]!.length; i++) {
-        if (!visited[adjacencyMap[current]![i].secondNodeIndex] && arcs[adjacencyMap[current]![i].arcIndex].residualCapacity >= residual) {
-          visited[current] = true;
-          parent[adjacencyMap[current]![i].secondNodeIndex] = current;
-          queue.add(adjacencyMap[current]![i].secondNodeIndex);
+        final int neighbour = adjacencyMap[current]![i].secondNodeIndex;
+        final int neighbourArchIndex = adjacencyMap[current]![i].arcIndex;
+
+        if (!visited[neighbour] && arcs[neighbourArchIndex].residualCapacity >= residual) {
+          visited[neighbour] = true;
+          parent[neighbour] = current;
+          queue.add(neighbour);
         }
       }
     }
@@ -169,8 +147,6 @@ class Graph extends ChangeNotifier {
     return List.empty();
   }
 
-  /// Remake of this
-  /// Something about reteaua reziduala
   List<int> breadthFirstSearch(int start, int end) {
     List<int> parent = List<int>.filled(nodes.length, -1, growable: false);
     List<bool> visited = List<bool>.filled(nodes.length, false, growable: false);
@@ -185,7 +161,6 @@ class Graph extends ChangeNotifier {
 
       if (current == end) {
         List<int> path = [];
-        current = end;
         while (current != -1) {
           path.add(current);
           current = parent[current];
@@ -194,10 +169,13 @@ class Graph extends ChangeNotifier {
       }
 
       for (int i = 0; i < adjacencyMap[current]!.length; i++) {
-        if (!visited[adjacencyMap[current]![i].secondNodeIndex] && arcs[adjacencyMap[current]![i].arcIndex].residualCapacity > 0) {
-          visited[current] = true;
-          parent[adjacencyMap[current]![i].secondNodeIndex] = current;
-          queue.add(adjacencyMap[current]![i].secondNodeIndex);
+        final int neighbour = adjacencyMap[current]![i].secondNodeIndex;
+        final int neighbourArchIndex = adjacencyMap[current]![i].arcIndex;
+
+        if (!visited[neighbour] && arcs[neighbourArchIndex].residualCapacity > 0) {
+          visited[neighbour] = true;
+          parent[neighbour] = current;
+          queue.add(neighbour);
         }
       }
     }
@@ -256,7 +234,8 @@ class Graph extends ChangeNotifier {
   }
 
   List<int> getDistances(int start, int end) {
-    List<int> distances = List<int>.filled(nodes.length, -1);
+    final int auxValue = nodes.length;
+    List<int> distances = List<int>.filled(nodes.length, auxValue);
 
     distances[end] = 0;
     Queue<int> current = Queue<int>()..add(end);
@@ -267,7 +246,7 @@ class Graph extends ChangeNotifier {
         var values = mapValue.value
             .where((element) => element.secondNodeIndex == current.first)
             .where((element) => arcs[element.arcIndex].residualCapacity > 0.0)
-            .where((element) => distances[arcs[element.arcIndex].firstNode] == -1)
+            .where((element) => distances[arcs[element.arcIndex].firstNode] == auxValue)
             .toList();
 
         if (values.isEmpty) {
