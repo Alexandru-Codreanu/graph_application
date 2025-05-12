@@ -210,6 +210,34 @@ class _AlgorithmsOptionState extends State<AlgorithmsOption> {
               ),
               SimpleOptionButton(
                 icon: Icons.import_export_sharp,
+                label: "Generic Preflux",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+                        IsolateAlgorithms.genericPreflux({
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": widget.controller.graph.nodes.first.id,
+                          "end": widget.controller.graph.nodes.last.id,
+                        });
+                        await compute(IsolateAlgorithms.genericPreflux, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": widget.controller.graph.nodes.first.id,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
                 label: "Preflux FiFo",
                 onTap: widget.controller.isLoading
                     ? null

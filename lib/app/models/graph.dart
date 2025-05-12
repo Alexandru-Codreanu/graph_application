@@ -33,9 +33,7 @@ class Graph extends ChangeNotifier {
     Graph residualGraph = Graph.empty();
     residualGraph.addNodeList(nodes.toList());
     for (var i = 0; i < arcs.length; i++) {
-      if (arcs[i].flow == 0) {
-        
-      }
+      if (arcs[i].flow == 0) {}
     }
     return residualGraph;
   }
@@ -392,5 +390,13 @@ class Graph extends ChangeNotifier {
       arcs[i].flow = 0;
     }
     notifyListeners();
+  }
+
+  double excessOf(int index) {
+    double outwardFlow = adjacencyMap[nodes[index].id]?.map((e) => arcs[e.arcIndex].flow).reduce((value, element) => value + element) ?? 0.0;
+
+    double inwardFlow = arcs.where((element) => element.secondNode == nodes[index].id).map((e) => e.flow).reduce((value, element) => value + element);
+
+    return inwardFlow - outwardFlow;
   }
 }

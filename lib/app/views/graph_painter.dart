@@ -140,7 +140,7 @@ class GraphPainter extends CustomPainter {
       path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
       path.quadraticBezierTo(controlX, controlY, start.dx, start.dy);
       path.close();
-      canvas.drawPath(path, graph.arcs[i].isPath ? pathPainter : edgePaint);
+      canvas.drawPath(path, edgePaint);
 
       // Draw the arrow
       final dxArrow = end.dx - start.dx;
@@ -175,7 +175,7 @@ class GraphPainter extends CustomPainter {
           ..lineTo(right.dx, right.dy)
           ..close();
 
-        canvas.drawPath(arrowPath, graph.arcs[i].isPath ? pathArrowPaint : arrowPaint);
+        canvas.drawPath(arrowPath, arrowPaint);
       }
 
       // Draw the text

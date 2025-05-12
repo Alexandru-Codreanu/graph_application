@@ -309,6 +309,7 @@ abstract final class IsolateAlgorithms {
     return graph;
   }
 
+  /// FIX
   static Graph genericPreflux(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
@@ -318,43 +319,59 @@ abstract final class IsolateAlgorithms {
     List<int> activeNodes = [];
     Random random = Random(DateTime.now().millisecondsSinceEpoch);
 
+    /// Initializare
     graph.setFlowToZero();
     distances = graph.getDistances(start, end);
     for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
       var arc = graph.arcs[graph.adjacencyMap[start]![i].arcIndex];
-      arc.flow = arc.residualCapacity;
-      if (arc.secondNode == end) {
+      arc.flow = arc.capacity;
+      if (arc.secondNode != end) {
         activeNodes.add(arc.secondNode);
       }
     }
     distances[start] = graph.nodes.length;
 
     while (activeNodes.isNotEmpty) {
+      print("$activeNodes");
       var x = activeNodes.removeAt(random.nextInt(activeNodes.length));
+
+      ///Inaintare/Reetichetare
       var admissibleArcs = graph.adjacencyMap[x]
               ?.where((element) => distances[x] == distances[element.secondNodeIndex] + 1 && graph.arcs[element.arcIndex].residualCapacity > 0.0)
               .toList() ??
           [];
 
       if (admissibleArcs.isNotEmpty) {
-        // admissibleArcs.first
-        //....
+        graph.arcs[admissibleArcs.first.arcIndex].flow = min(graph.excessOf(x), graph.arcs[admissibleArcs.first.arcIndex].residualCapacity);
+        if (admissibleArcs.first.secondNodeIndex == end) {
+          continue;
+        }
+
+        activeNodes.add(admissibleArcs.first.secondNodeIndex);
+      } else {
+        distances[x] = graph.adjacencyMap[x]!
+                .where((element) => graph.arcs[element.arcIndex].residualCapacity > 0.0)
+                .map((e) => graph.arcs[e.arcIndex].residualCapacity)
+                .reduce(min)
+                .toInt() +
+            1;
       }
     }
 
     return graph;
   }
 
+  /// FIX
   static Graph prefluxFiFo(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
     final int start = input.$2;
     final int end = input.$3;
 
-    final Queue c = Queue<int>();
-    final List<int> distances = graph.getDistances(start, end);
-
     graph.setFlowToZero();
+    final List<int> distances = graph.getDistances(start, end);
+    final Queue c = Queue<int>();
+
     distances[start] = graph.nodes.length;
 
     graph.adjacencyMap[start]?.forEach((element) {
@@ -373,13 +390,7 @@ abstract final class IsolateAlgorithms {
               .toList() ??
           [];
 
-      var arcsWithX = graph.adjacencyMap.entries
-          .where((element) => element.value.any((element) => element.secondNodeIndex == x))
-          .map((e) => e.value.firstWhere((element) => element.secondNodeIndex == x))
-          .map((e) => graph.arcs[e.arcIndex]);
-
-      var excess = arcsWithX.map((e) => e.flow).reduce((value, element) => value + element) -
-          graph.adjacencyMap[x]!.map((e) => graph.arcs[e.arcIndex].flow).reduce((value, element) => value + element);
+      var excess = graph.excessOf(x);
 
       while (excess > 0 && admissibleArcs.isNotEmpty) {
         var first = admissibleArcs.removeAt(0);
@@ -390,8 +401,7 @@ abstract final class IsolateAlgorithms {
           c.add(graph.arcs[first.arcIndex].secondNode);
         }
 
-        excess = arcsWithX.map((e) => e.flow).reduce((value, element) => value + element) -
-            graph.adjacencyMap[x]!.map((e) => graph.arcs[e.arcIndex].flow).reduce((value, element) => value + element);
+        excess = graph.excessOf(x);
       }
 
       if (excess > 0) {
@@ -409,6 +419,26 @@ abstract final class IsolateAlgorithms {
         c.add(graph.adjacencyMap[x]![index].secondNodeIndex);
       }
     }
+
+    return graph;
+  }
+
+  /// IMPLEMENT
+  static Graph prefluxHeap(Map<String, Object> map) {
+    final (Graph, int, int) input = handleInput(map);
+    final Graph graph = input.$1;
+    final int start = input.$2;
+    final int end = input.$3;
+
+    return graph;
+  }
+
+  /// IMPLEMENT
+  static Graph excessScaling(Map<String, Object> map) {
+    final (Graph, int, int) input = handleInput(map);
+    final Graph graph = input.$1;
+    final int start = input.$2;
+    final int end = input.$3;
 
     return graph;
   }

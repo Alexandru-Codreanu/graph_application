@@ -3,21 +3,31 @@ class Arc {
   int secondNode;
   double capacity;
   double flow;
-  bool isPath;
 
   Arc({
     required this.firstNode,
     required this.secondNode,
     required this.capacity,
     required this.flow,
-  }) : isPath = false;
+  });
 
   Arc.fromJson({required dynamic json})
       : firstNode = json['first'] as int,
         secondNode = json['second'] as int,
         capacity = json['capacity'] as double,
-        flow = json['flow'] as double,
-        isPath = (json['isPath'] as bool?) ?? false;
+        flow = json['flow'] as double;
 
   double get residualCapacity => capacity - flow;
+}
+
+class ResidualArc {
+  int firstNode;
+  int secondNode;
+  int residual;
+
+  ResidualArc({
+    required this.firstNode,
+    required this.secondNode,
+    required this.residual,
+  });
 }
