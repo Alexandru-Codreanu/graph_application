@@ -215,12 +215,6 @@ class _AlgorithmsOptionState extends State<AlgorithmsOption> {
                     ? null
                     : () async {
                         widget.controller.isLoading = true;
-                        IsolateAlgorithms.genericPreflux({
-                          "nodes": widget.controller.graph.nodes,
-                          "arcs": widget.controller.graph.arcs,
-                          "start": widget.controller.graph.nodes.first.id,
-                          "end": widget.controller.graph.nodes.last.id,
-                        });
                         await compute(IsolateAlgorithms.genericPreflux, {
                           "nodes": widget.controller.graph.nodes,
                           "arcs": widget.controller.graph.arcs,
@@ -244,6 +238,50 @@ class _AlgorithmsOptionState extends State<AlgorithmsOption> {
                     : () async {
                         widget.controller.isLoading = true;
                         await compute(IsolateAlgorithms.prefluxFiFo, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": widget.controller.graph.nodes.first.id,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
+                label: "Preflux Priority",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+                        await compute(IsolateAlgorithms.prefluxHeap, {
+                          "nodes": widget.controller.graph.nodes,
+                          "arcs": widget.controller.graph.arcs,
+                          "start": widget.controller.graph.nodes.first.id,
+                          "end": widget.controller.graph.nodes.last.id,
+                        }).then(
+                          (value) {
+                            widget.controller.graph.copyGraph(value);
+                          },
+                        );
+
+                        widget.controller.isLoading = false;
+                        return;
+                      },
+              ),
+              SimpleOptionButton(
+                icon: Icons.import_export_sharp,
+                label: "Excessive scaling",
+                onTap: widget.controller.isLoading
+                    ? null
+                    : () async {
+                        widget.controller.isLoading = true;
+                        await compute(IsolateAlgorithms.excessScaling, {
                           "nodes": widget.controller.graph.nodes,
                           "arcs": widget.controller.graph.arcs,
                           "start": widget.controller.graph.nodes.first.id,

@@ -393,9 +393,19 @@ class Graph extends ChangeNotifier {
   }
 
   double excessOf(int index) {
-    double outwardFlow = adjacencyMap[nodes[index].id]?.map((e) => arcs[e.arcIndex].flow).reduce((value, element) => value + element) ?? 0.0;
+    var outwardArcs = adjacencyMap[nodes[index].id]!.map((e) => arcs[e.arcIndex].flow);
+    var inwardArcs = arcs.where((element) => element.secondNode == nodes[index].id).map((e) => e.flow);
 
-    double inwardFlow = arcs.where((element) => element.secondNode == nodes[index].id).map((e) => e.flow).reduce((value, element) => value + element);
+    double outwardFlow = 0.0;
+    double inwardFlow = 0.0;
+
+    if (outwardArcs.isNotEmpty) {
+      outwardFlow += outwardArcs.reduce((value, element) => value + element);
+    }
+
+    if (inwardArcs.isNotEmpty) {
+      inwardFlow += inwardArcs.reduce((value, element) => value + element);
+    }
 
     return inwardFlow - outwardFlow;
   }

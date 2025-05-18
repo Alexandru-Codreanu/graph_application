@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'dart:collection';
 import 'dart:math';
 import '../models/arc.dart';
@@ -309,7 +310,6 @@ abstract final class IsolateAlgorithms {
     return graph;
   }
 
-  /// FIX
   static Graph genericPreflux(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
@@ -323,13 +323,15 @@ abstract final class IsolateAlgorithms {
     graph.setFlowToZero();
     distances = graph.getDistances(start, end);
     for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
-      var arc = graph.arcs[graph.adjacencyMap[start]![i].arcIndex];
-      arc.flow = arc.capacity;
-      if (arc.secondNode != end) {
-        activeNodes.add(arc.secondNode);
-      }
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow = graph.arcs[graph.adjacencyMap[start]![i].arcIndex].capacity;
     }
     distances[start] = graph.nodes.length;
+
+    for (var i = 0; i < graph.nodes.length; i++) {
+      if (distances[i] > 0 && graph.excessOf(i) > 0) {
+        activeNodes.add(i);
+      }
+    }
 
     while (activeNodes.isNotEmpty) {
       print("$activeNodes");
@@ -342,59 +344,67 @@ abstract final class IsolateAlgorithms {
           [];
 
       if (admissibleArcs.isNotEmpty) {
-        graph.arcs[admissibleArcs.first.arcIndex].flow = min(graph.excessOf(x), graph.arcs[admissibleArcs.first.arcIndex].residualCapacity);
-        if (admissibleArcs.first.secondNodeIndex == end) {
-          continue;
-        }
-
-        activeNodes.add(admissibleArcs.first.secondNodeIndex);
+        graph.arcs[admissibleArcs.first.arcIndex].flow += min(graph.excessOf(x), graph.arcs[admissibleArcs.first.arcIndex].residualCapacity);
       } else {
-        distances[x] = graph.adjacencyMap[x]!
-                .where((element) => graph.arcs[element.arcIndex].residualCapacity > 0.0)
-                .map((e) => graph.arcs[e.arcIndex].residualCapacity)
-                .reduce(min)
-                .toInt() +
-            1;
+        var relatedArcs = graph.adjacencyMap[x]!
+            .where((element) => graph.arcs[element.arcIndex].residualCapacity > 0.0)
+            .map((e) => distances[graph.arcs[e.arcIndex].secondNode]);
+
+        if (relatedArcs.isEmpty) continue;
+
+        distances[x] = relatedArcs.reduce(min).toInt() + 1;
       }
+
+      activeNodes.clear();
+      for (var i = 0; i < graph.nodes.length; i++) {
+        if (distances[i] > 0 && graph.excessOf(i) > 0) {
+          activeNodes.add(i);
+        }
+      }
+    }
+
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow -= graph.excessOf(graph.adjacencyMap[start]![i].secondNodeIndex);
     }
 
     return graph;
   }
 
-  /// FIX
   static Graph prefluxFiFo(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
     final int start = input.$2;
     final int end = input.$3;
+    List<int> distances = [];
 
     graph.setFlowToZero();
-    final List<int> distances = graph.getDistances(start, end);
-    final Queue c = Queue<int>();
-
-    distances[start] = graph.nodes.length;
-
-    graph.adjacencyMap[start]?.forEach((element) {
-      graph.arcs[element.arcIndex].flow = graph.arcs[element.arcIndex].capacity;
-      if (element.secondNodeIndex != end) {
-        c.add(element.secondNodeIndex);
+    Queue c = Queue<int>();
+    distances = graph.getDistances(start, end);
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow = graph.arcs[graph.adjacencyMap[start]![i].arcIndex].capacity;
+      if (graph.adjacencyMap[start]![i].secondNodeIndex != end) {
+        c.add(graph.adjacencyMap[start]![i].secondNodeIndex);
       }
-    });
-
+    }
+    distances[start] = graph.nodes.length;
     while (c.isNotEmpty) {
       print("C: ${c.map((e) => e)}");
 
       int x = c.removeFirst();
+
       var admissibleArcs = graph.adjacencyMap[x]
               ?.where((element) => distances[x] == distances[element.secondNodeIndex] + 1 && graph.arcs[element.arcIndex].residualCapacity > 0.0)
               .toList() ??
           [];
 
-      var excess = graph.excessOf(x);
+      double excess = graph.excessOf(x);
 
       while (excess > 0 && admissibleArcs.isNotEmpty) {
-        var first = admissibleArcs.removeAt(0);
+        var first = admissibleArcs.first;
+        admissibleArcs.remove(first);
+        excess = graph.excessOf(x);
         graph.arcs[first.arcIndex].flow += min(excess, graph.arcs[first.arcIndex].residualCapacity);
+
         if (graph.arcs[first.arcIndex].secondNode != start &&
             graph.arcs[first.arcIndex].secondNode != end &&
             !c.contains(graph.arcs[first.arcIndex].secondNode)) {
@@ -406,39 +416,168 @@ abstract final class IsolateAlgorithms {
 
       if (excess > 0) {
         var min = graph.nodes.length;
-        var index = 0;
+        var index = -1;
 
         for (var i = 0; i < graph.adjacencyMap[x]!.length; i++) {
-          if (min < distances[graph.adjacencyMap[x]![i].secondNodeIndex]) {
+          if (min >= distances[graph.adjacencyMap[x]![i].secondNodeIndex] && graph.arcs[graph.adjacencyMap[x]![i].arcIndex].residualCapacity > 0) {
             min = distances[graph.adjacencyMap[x]![i].secondNodeIndex];
             index = i;
           }
         }
 
+        if (index == -1) continue;
+
         distances[x] = min + 1;
-        c.add(graph.adjacencyMap[x]![index].secondNodeIndex);
+        c.add(x);
       }
+    }
+
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow -= graph.excessOf(graph.adjacencyMap[start]![i].secondNodeIndex);
     }
 
     return graph;
   }
 
-  /// IMPLEMENT
   static Graph prefluxHeap(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
     final int start = input.$2;
     final int end = input.$3;
+    List<int> distances = [];
+
+    graph.setFlowToZero();
+    PriorityQueue<int> c = PriorityQueue<int>((p0, p1) => distances[p0].compareTo(distances[p1]));
+    distances = graph.getDistances(start, end);
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow = graph.arcs[graph.adjacencyMap[start]![i].arcIndex].capacity;
+      if (graph.adjacencyMap[start]![i].secondNodeIndex != end) {
+        c.add(graph.adjacencyMap[start]![i].secondNodeIndex);
+      }
+    }
+    distances[start] = graph.nodes.length;
+    while (c.isNotEmpty) {
+      print("C: ${c.toList()}");
+
+      int x = c.removeFirst();
+
+      var admissibleArcs = graph.adjacencyMap[x]
+              ?.where((element) => distances[x] == distances[element.secondNodeIndex] + 1 && graph.arcs[element.arcIndex].residualCapacity > 0.0)
+              .toList() ??
+          [];
+
+      double excess = graph.excessOf(x);
+
+      while (excess > 0 && admissibleArcs.isNotEmpty) {
+        var first = admissibleArcs.first;
+        admissibleArcs.remove(first);
+        excess = graph.excessOf(x);
+        graph.arcs[first.arcIndex].flow += min(excess, graph.arcs[first.arcIndex].residualCapacity);
+
+        if (graph.arcs[first.arcIndex].secondNode != start &&
+            graph.arcs[first.arcIndex].secondNode != end &&
+            !c.contains(graph.arcs[first.arcIndex].secondNode)) {
+          c.add(graph.arcs[first.arcIndex].secondNode);
+        }
+
+        excess = graph.excessOf(x);
+      }
+
+      if (excess > 0) {
+        var min = graph.nodes.length;
+        var index = -1;
+
+        for (var i = 0; i < graph.adjacencyMap[x]!.length; i++) {
+          if (min >= distances[graph.adjacencyMap[x]![i].secondNodeIndex] && graph.arcs[graph.adjacencyMap[x]![i].arcIndex].residualCapacity > 0) {
+            min = distances[graph.adjacencyMap[x]![i].secondNodeIndex];
+            index = i;
+          }
+        }
+
+        if (index == -1) continue;
+
+        distances[x] = min + 1;
+        c.add(x);
+      }
+    }
+
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow -= graph.excessOf(graph.adjacencyMap[start]![i].secondNodeIndex);
+    }
 
     return graph;
   }
 
-  /// IMPLEMENT
   static Graph excessScaling(Map<String, Object> map) {
     final (Graph, int, int) input = handleInput(map);
     final Graph graph = input.$1;
     final int start = input.$2;
     final int end = input.$3;
+    List<int> distances = [];
+    List<int> activeNodes = [];
+
+    graph.setFlowToZero();
+    distances = graph.getDistances(start, end);
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow = graph.arcs[graph.adjacencyMap[start]![i].arcIndex].capacity;
+    }
+    distances[start] = graph.nodes.length;
+
+    for (var i = 0; i < graph.nodes.length; i++) {
+      if (distances[i] > 0 && graph.excessOf(i) > 0) {
+        activeNodes.add(i);
+      }
+    }
+
+    int r = pow(2, log(graph.arcs.map((e) => e.capacity).reduce(max)).toDouble().ceil()).toInt();
+
+    while (r >= 1) {
+      print(r);
+      var excessiveNodes = graph.nodes.where((element) => graph.excessOf(element.id) >= r / 2).toList();
+      print('Ex: ${excessiveNodes.map((e) => e.id)}');
+
+      while (excessiveNodes.isNotEmpty) {
+        var x = excessiveNodes.reduce((value, element) => distances[value.id] < distances[element.id] ? value : element);
+        excessiveNodes.remove(x);
+
+        var admissibleArcs = graph.adjacencyMap[x.id]
+                ?.where((element) => distances[x.id] == distances[element.secondNodeIndex] + 1 && graph.arcs[element.arcIndex].residualCapacity > 0)
+                .toList() ??
+            [];
+
+        if (admissibleArcs.isNotEmpty) {
+          if (r < graph.excessOf(admissibleArcs.first.secondNodeIndex)) {
+            graph.arcs[admissibleArcs.first.arcIndex].flow += [
+              graph.excessOf(x.id),
+              graph.arcs[admissibleArcs.first.arcIndex].residualCapacity,
+              r - graph.excessOf(admissibleArcs.first.secondNodeIndex)
+            ].reduce(min);
+          } else {}
+          graph.arcs[admissibleArcs.first.arcIndex].flow += min(graph.excessOf(x.id), graph.arcs[admissibleArcs.first.arcIndex].residualCapacity);
+        } else {
+          var relatedArcs = graph.adjacencyMap[x.id]!
+              .where((element) => graph.arcs[element.arcIndex].residualCapacity > 0.0)
+              .map((e) => distances[graph.arcs[e.arcIndex].secondNode]);
+
+          if (relatedArcs.isEmpty) continue;
+
+          distances[x.id] = relatedArcs.reduce(min).toInt() + 1;
+        }
+      }
+
+      r = (r / 2).toInt();
+    }
+
+    for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow -= graph.excessOf(graph.adjacencyMap[start]![i].secondNodeIndex);
+    }
+
+    for (var element in graph.arcs.where((element) => element.secondNode == end)) {
+      element.flow += graph.excessOf(element.firstNode);
+    }
+    for (var i = 0; i < graph.adjacencyMap[end]!.length; i++) {
+      graph.arcs[graph.adjacencyMap[end]![i].arcIndex].flow += graph.excessOf(graph.adjacencyMap[end]![i].secondNodeIndex);
+    }
 
     return graph;
   }
