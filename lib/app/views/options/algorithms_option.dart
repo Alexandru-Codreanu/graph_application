@@ -164,28 +164,28 @@ class _AlgorithmsOptionState extends State<AlgorithmsOption> {
                         return;
                       },
               ),
-              SimpleOptionButton(
-                icon: Icons.import_export_sharp,
-                label: "Ahuja-Orlin(B)",
-                onTap: widget.controller.isLoading
-                    ? null
-                    : () async {
-                        widget.controller.isLoading = true;
-                        await compute(IsolateAlgorithms.shortPathAhujaOrlinB, {
-                          "nodes": widget.controller.graph.nodes,
-                          "arcs": widget.controller.graph.arcs,
-                          "start": widget.controller.graph.nodes.first.id,
-                          "end": widget.controller.graph.nodes.last.id,
-                        }).then(
-                          (value) {
-                            widget.controller.graph.copyGraph(value);
-                          },
-                        );
+              // SimpleOptionButton(
+              //   icon: Icons.import_export_sharp,
+              //   label: "Ahuja-Orlin(B)",
+              //   onTap: widget.controller.isLoading
+              //       ? null
+              //       : () async {
+              //           widget.controller.isLoading = true;
+              //           await compute(IsolateAlgorithms.shortPathAhujaOrlinB, {
+              //             "nodes": widget.controller.graph.nodes,
+              //             "arcs": widget.controller.graph.arcs,
+              //             "start": widget.controller.graph.nodes.first.id,
+              //             "end": widget.controller.graph.nodes.last.id,
+              //           }).then(
+              //             (value) {
+              //               widget.controller.graph.copyGraph(value);
+              //             },
+              //           );
 
-                        widget.controller.isLoading = false;
-                        return;
-                      },
-              ),
+              //           widget.controller.isLoading = false;
+              //           return;
+              //         },
+              // ),
               SimpleOptionButton(
                 icon: Icons.import_export_sharp,
                 label: "Ahuja-Orlin(S)",

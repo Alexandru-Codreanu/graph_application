@@ -447,7 +447,7 @@ abstract final class IsolateAlgorithms {
     List<int> distances = [];
 
     graph.setFlowToZero();
-    PriorityQueue<int> c = PriorityQueue<int>((p0, p1) => distances[p0].compareTo(distances[p1]));
+    PriorityQueue<int> c = PriorityQueue<int>((p0, p1) => distances[p1].compareTo(distances[p0]));
     distances = graph.getDistances(start, end);
     for (var i = 0; i < graph.adjacencyMap[start]!.length; i++) {
       graph.arcs[graph.adjacencyMap[start]![i].arcIndex].flow = graph.arcs[graph.adjacencyMap[start]![i].arcIndex].capacity;
@@ -574,9 +574,6 @@ abstract final class IsolateAlgorithms {
 
     for (var element in graph.arcs.where((element) => element.secondNode == end)) {
       element.flow += graph.excessOf(element.firstNode);
-    }
-    for (var i = 0; i < graph.adjacencyMap[end]!.length; i++) {
-      graph.arcs[graph.adjacencyMap[end]![i].arcIndex].flow += graph.excessOf(graph.adjacencyMap[end]![i].secondNodeIndex);
     }
 
     return graph;
